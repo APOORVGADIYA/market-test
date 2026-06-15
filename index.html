@@ -1,273 +1,355 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="night">
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Sample Founding Analyst Assessment</title>
+<title>Sample Test</title>
 <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          turquoise: {
+            50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+            400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+            800: '#115e59', 900: '#134e4a', 950: '#042f2e',
+          }
+        }
+      }
+    }
+  }
+</script>
 <style>
-  :root { --timer-pct: 100%; }
-  * { font-family: 'Inter', sans-serif; }
+  :root { --timer-pct: 100%; --turquoise: #14b8a6; --turquoise-light: #2dd4bf; --turquoise-dark: #0d9488; }
+  * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
   code, .mono { font-family: 'JetBrains Mono', monospace; }
 
-  body { background: #0d1117; min-height: 100vh; }
+  body {
+    background: linear-gradient(160deg, #041412 0%, #0a1f1c 40%, #0d2824 100%);
+    min-height: 100vh;
+    color: #e2f5f2;
+  }
 
-  .brand-gradient { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); }
-  .brand-text { background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .brand-gradient {
+    background: linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%);
+  }
+  .brand-text {
+    background: linear-gradient(135deg, #5eead4, #2dd4bf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-  /* Timer ring */
-  .timer-ring { position: relative; width: 80px; height: 80px; }
+  .glass-card {
+    background: rgba(19, 39, 36, 0.75);
+    border: 1px solid rgba(45, 212, 191, 0.15);
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  .timer-ring { position: relative; width: 84px; height: 84px; }
   .timer-ring svg { transform: rotate(-90deg); }
-  .timer-ring circle.bg { stroke: #1e2533; }
+  .timer-ring circle.bg { stroke: #1a3530; }
   .timer-ring circle.fg {
-    stroke: #818cf8;
+    stroke: var(--turquoise-light);
     stroke-dasharray: 220;
     stroke-dashoffset: calc(220 * (1 - var(--timer-pct) / 100));
     transition: stroke-dashoffset 0.9s linear, stroke 0.5s;
   }
-  .timer-ring circle.fg.warn { stroke: #f59e0b; }
-  .timer-ring circle.fg.danger { stroke: #ef4444; }
+  .timer-ring circle.fg.warn { stroke: #fbbf24; }
+  .timer-ring circle.fg.danger { stroke: #f87171; }
   .timer-label {
     position: absolute; inset: 0; display: flex; align-items: center;
     justify-content: center; font-family: 'JetBrains Mono', monospace;
-    font-size: 1.25rem; font-weight: 600; color: #e2e8f0;
+    font-size: 1.3rem; font-weight: 600; color: #ccfbf1;
   }
 
-  /* Question card */
-  .q-card {
-    background: #161b27;
-    border: 1px solid #1e2a3e;
-    border-radius: 16px;
-    transition: box-shadow 0.2s;
-  }
-
-  /* Option buttons */
   .option-btn {
-    background: #1a2235;
-    border: 1.5px solid #1e2a3e;
-    border-radius: 10px;
-    padding: 14px 18px;
+    background: rgba(15, 35, 32, 0.8);
+    border: 1.5px solid rgba(45, 212, 191, 0.12);
+    border-radius: 14px;
+    padding: 16px 18px;
     cursor: pointer;
-    transition: all 0.18s;
+    transition: all 0.2s ease;
     text-align: left;
     width: 100%;
-    color: #cbd5e1;
+    color: #a7f3d0;
     font-size: 0.95rem;
-    line-height: 1.5;
+    line-height: 1.55;
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 14px;
   }
-  .option-btn:hover:not(.selected):not(.correct):not(.wrong) {
-    border-color: #6366f1;
-    background: #1e2845;
-    color: #f1f5f9;
+  .option-btn:hover {
+    border-color: rgba(45, 212, 191, 0.45);
+    background: rgba(20, 50, 46, 0.9);
+    color: #ecfdf5;
+    transform: translateY(-1px);
   }
   .option-btn.selected {
-    border-color: #6366f1;
-    background: #1e2845;
-    color: #f1f5f9;
+    border-color: var(--turquoise-light);
+    background: rgba(13, 148, 136, 0.25);
+    color: #ecfdf5;
+    box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
   }
   .option-btn.correct {
-    border-color: #22c55e;
-    background: #0f2818;
-    color: #86efac;
+    border-color: #34d399;
+    background: rgba(6, 78, 59, 0.5);
+    color: #a7f3d0;
   }
   .option-btn.wrong {
-    border-color: #ef4444;
-    background: #2a0f0f;
-    color: #fca5a5;
+    border-color: #f87171;
+    background: rgba(127, 29, 29, 0.35);
+    color: #fecaca;
   }
+  .option-btn.locked { pointer-events: none; }
+
   .option-label {
-    width: 26px; height: 26px; min-width: 26px;
-    border-radius: 6px;
-    background: #0d1117;
+    width: 28px; height: 28px; min-width: 28px;
+    border-radius: 8px;
+    background: rgba(4, 20, 18, 0.8);
     display: flex; align-items: center; justify-content: center;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem; font-weight: 600;
-    color: #6366f1;
-    border: 1px solid #2a3550;
+    font-size: 0.75rem; font-weight: 600;
+    color: var(--turquoise-light);
+    border: 1px solid rgba(45, 212, 191, 0.25);
     margin-top: 1px;
   }
-
-  /* Section badge */
-  .section-badge {
-    font-size: 0.7rem; letter-spacing: 0.12em;
-    text-transform: uppercase; font-weight: 600;
-    padding: 3px 10px; border-radius: 999px;
+  .option-btn.selected .option-label {
+    background: var(--turquoise-dark);
+    color: white;
+    border-color: transparent;
   }
 
-  /* Progress bar */
+  .section-badge {
+    font-size: 0.68rem; letter-spacing: 0.1em;
+    text-transform: uppercase; font-weight: 600;
+    padding: 4px 12px; border-radius: 999px;
+  }
+
   .progress-track {
-    background: #1e2533; border-radius: 999px; height: 4px; overflow: hidden;
+    background: rgba(26, 53, 48, 0.8); border-radius: 999px; height: 6px; overflow: hidden;
   }
   .progress-fill {
     height: 100%; border-radius: 999px;
-    background: linear-gradient(90deg, #6366f1, #a855f7);
-    transition: width 0.3s ease;
+    background: linear-gradient(90deg, #0d9488, #2dd4bf);
+    transition: width 0.35s ease;
+    box-shadow: 0 0 12px rgba(45, 212, 191, 0.4);
   }
 
-  /* Results */
   .score-ring { width: 160px; height: 160px; position: relative; }
   .score-ring svg { transform: rotate(-90deg); }
-  .score-ring circle.bg { stroke: #1e2533; }
-  .score-ring circle.fg { stroke: #818cf8; stroke-dasharray: 440; transition: stroke-dashoffset 1.2s ease; }
+  .score-ring circle.bg { stroke: #1a3530; }
+  .score-ring circle.fg { stroke: var(--turquoise-light); stroke-dasharray: 440; transition: stroke-dashoffset 1.2s ease; }
   .score-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-  /* Splash */
-  #splash { background: #0d1117; }
   .feature-chip {
-    background: #161b27; border: 1px solid #1e2a3e;
-    border-radius: 8px; padding: 10px 16px;
+    background: rgba(19, 39, 36, 0.6);
+    border: 1px solid rgba(45, 212, 191, 0.12);
+    border-radius: 12px; padding: 14px 16px;
     font-size: 0.85rem; color: #94a3b8;
+    transition: border-color 0.2s;
+  }
+  .feature-chip:hover { border-color: rgba(45, 212, 191, 0.3); }
+
+  .submit-btn {
+    background: linear-gradient(135deg, #0d9488, #14b8a6);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 32px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(20, 184, 166, 0.35);
+  }
+  .submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(20, 184, 166, 0.5);
+  }
+  .submit-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
   }
 
-  /* Timeout flash */
-  @keyframes flashRed { 0%,100% { background: #161b27; } 50% { background: #2a0f0f; } }
+  .start-btn {
+    background: linear-gradient(135deg, #0d9488, #14b8a6);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 40px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 24px rgba(20, 184, 166, 0.4);
+  }
+  .start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(20, 184, 166, 0.55);
+  }
+
+  @keyframes flashRed { 0%,100% { background: rgba(19, 39, 36, 0.75); } 50% { background: rgba(80, 20, 20, 0.5); } }
   .timeout-flash { animation: flashRed 0.4s ease; }
 
-  /* Fade in */
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-  .fade-up { animation: fadeUp 0.3s ease forwards; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.35s ease forwards; }
+
+  .logo-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 16px rgba(20, 184, 166, 0.3);
+  }
+
+  .dot-grid {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: radial-gradient(rgba(45, 212, 191, 0.08) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .content-wrap { position: relative; z-index: 1; }
+
+  .sec-t1 { background: rgba(13, 148, 136, 0.2); color: #5eead4; }
+  .sec-t2 { background: rgba(20, 184, 166, 0.18); color: #2dd4bf; }
+  .sec-t3 { background: rgba(45, 212, 191, 0.15); color: #99f6e4; }
+  .sec-t4 { background: rgba(94, 234, 212, 0.12); color: #ccfbf1; }
 </style>
 </head>
 <body>
 
-<!-- ===================== SPLASH ===================== -->
-<div id="splash" class="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+<div class="dot-grid"></div>
+
+<!-- SPLASH -->
+<div id="splash" class="content-wrap min-h-screen flex flex-col items-center justify-center px-4 py-12">
   <div class="w-full max-w-2xl fade-up">
-    <!-- Logo -->
     <div class="flex items-center gap-3 mb-10">
-      <div class="brand-gradient w-9 h-9 rounded-lg flex items-center justify-center">
-        <span class="text-white font-bold text-sm mono">R</span>
+      <div class="logo-icon brand-gradient">
+        <span class="text-white font-bold mono">T</span>
       </div>
-      <span class="text-slate-400 text-sm font-medium tracking-widest uppercase">Ratch</span>
+      <span class="text-turquoise-300/70 text-sm font-semibold tracking-widest uppercase">Sample Test</span>
     </div>
 
-    <h1 class="text-4xl font-bold text-white mb-3 leading-tight">
-      Founding Analyst<br/><span class="brand-text">Assessment</span>
+    <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4 leading-tight">
+      Practice<br/><span class="brand-text">Assessment</span>
     </h1>
-    <p class="text-slate-400 mb-8 text-base leading-relaxed max-w-lg">
-      60 questions across four reasoning domains. Machine-scored to filter on raw cognitive horsepower. No second chances on the timer.
+    <p class="text-turquoise-200/60 mb-8 text-base leading-relaxed max-w-lg">
+      A sample 60-question test across four reasoning domains. Pick your answer, change it anytime, then submit to move forward.
     </p>
 
-    <!-- Stats row -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
       <div class="feature-chip text-center">
         <div class="text-white font-bold text-xl mono">60</div>
-        <div class="text-xs mt-0.5">Questions</div>
+        <div class="text-xs mt-0.5 text-turquoise-300/50">Questions</div>
       </div>
       <div class="feature-chip text-center">
         <div class="text-white font-bold text-xl mono">30s</div>
-        <div class="text-xs mt-0.5">Per Question</div>
+        <div class="text-xs mt-0.5 text-turquoise-300/50">Per Question</div>
       </div>
       <div class="feature-chip text-center">
         <div class="text-white font-bold text-xl mono">4</div>
-        <div class="text-xs mt-0.5">Sections</div>
+        <div class="text-xs mt-0.5 text-turquoise-300/50">Sections</div>
       </div>
       <div class="feature-chip text-center">
         <div class="text-white font-bold text-xl mono">~30m</div>
-        <div class="text-xs mt-0.5">Total Time</div>
+        <div class="text-xs mt-0.5 text-turquoise-300/50">Total Time</div>
       </div>
     </div>
 
-    <!-- Sections list -->
-    <div class="q-card p-5 mb-8">
-      <div class="text-xs uppercase tracking-widest text-slate-500 mb-4 font-semibold">Four Sections</div>
+    <div class="glass-card p-6 mb-8">
+      <div class="text-xs uppercase tracking-widest text-turquoise-400/50 mb-4 font-semibold">Four Sections</div>
       <div class="space-y-3">
         <div class="flex items-center gap-3">
-          <span class="section-badge bg-indigo-900/60 text-indigo-300">Section 1</span>
-          <span class="text-slate-300 text-sm">Logical Reasoning · Q1–15</span>
+          <span class="section-badge sec-t1">Section 1</span>
+          <span class="text-turquoise-100/80 text-sm">Logical Reasoning (Q1 to 15)</span>
         </div>
         <div class="flex items-center gap-3">
-          <span class="section-badge bg-violet-900/60 text-violet-300">Section 2</span>
-          <span class="text-slate-300 text-sm">Quantitative Aptitude · Q16–30</span>
+          <span class="section-badge sec-t2">Section 2</span>
+          <span class="text-turquoise-100/80 text-sm">Quantitative Aptitude (Q16 to 30)</span>
         </div>
         <div class="flex items-center gap-3">
-          <span class="section-badge bg-purple-900/60 text-purple-300">Section 3</span>
-          <span class="text-slate-300 text-sm">Verbal & Critical Reasoning · Q31–45</span>
+          <span class="section-badge sec-t3">Section 3</span>
+          <span class="text-turquoise-100/80 text-sm">Verbal & Critical Reasoning (Q31 to 45)</span>
         </div>
         <div class="flex items-center gap-3">
-          <span class="section-badge bg-fuchsia-900/60 text-fuchsia-300">Section 4</span>
-          <span class="text-slate-300 text-sm">Pattern & Sparse Inference · Q46–60</span>
+          <span class="section-badge sec-t4">Section 4</span>
+          <span class="text-turquoise-100/80 text-sm">Pattern & Sparse Inference (Q46 to 60)</span>
         </div>
       </div>
     </div>
 
-    <!-- Rules -->
-    <div class="text-sm text-slate-500 mb-8 space-y-1">
-      <p>→ Each question auto-advances when the 30s timer expires (marked wrong).</p>
-      <p>→ Selecting an option locks it — no changes.</p>
-      <p>→ Results + section breakdown shown at the end.</p>
+    <div class="text-sm text-turquoise-300/45 mb-8 space-y-2">
+      <p>Each question has a 30 second timer. When time runs out, the question is marked wrong and you move on.</p>
+      <p>Tap an option to select it. You can change your choice before submitting.</p>
+      <p>Press Submit to go to the next question. There is no going back.</p>
     </div>
 
-    <button onclick="startTest()" class="btn brand-gradient border-0 text-white w-full sm:w-auto px-10 py-3 text-base font-semibold rounded-xl hover:opacity-90 transition-opacity">
-      Begin Assessment →
+    <button onclick="startTest()" class="start-btn">
+      Start Sample Test
     </button>
   </div>
 </div>
 
-<!-- ===================== TEST ===================== -->
-<div id="testView" class="hidden min-h-screen px-4 py-8">
+<!-- TEST -->
+<div id="testView" class="hidden content-wrap min-h-screen px-4 py-8">
   <div class="max-w-2xl mx-auto">
 
-    <!-- Top bar -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center gap-3">
-        <div class="brand-gradient w-8 h-8 rounded-lg flex items-center justify-center">
-          <span class="text-white font-bold text-xs mono">R</span>
+        <div class="logo-icon brand-gradient w-9 h-9">
+          <span class="text-white font-bold text-xs mono">T</span>
         </div>
-        <span id="sectionBadge" class="section-badge bg-indigo-900/60 text-indigo-300">Section 1</span>
+        <span id="sectionBadge" class="section-badge sec-t1">Section 1</span>
       </div>
       <div class="timer-ring" id="timerRing">
-        <svg width="80" height="80" viewBox="0 0 80 80">
-          <circle class="bg" cx="40" cy="40" r="35" fill="none" stroke-width="6"/>
-          <circle class="fg" id="timerArc" cx="40" cy="40" r="35" fill="none" stroke-width="6" stroke-linecap="round"/>
+        <svg width="84" height="84" viewBox="0 0 84 84">
+          <circle class="bg" cx="42" cy="42" r="35" fill="none" stroke-width="6"/>
+          <circle class="fg" id="timerArc" cx="42" cy="42" r="35" fill="none" stroke-width="6" stroke-linecap="round"/>
         </svg>
         <div class="timer-label" id="timerLabel">30</div>
       </div>
     </div>
 
-    <!-- Progress -->
     <div class="flex items-center gap-3 mb-6">
       <div class="progress-track flex-1">
         <div class="progress-fill" id="progressFill" style="width:0%"></div>
       </div>
-      <span id="qCounter" class="text-slate-500 text-xs mono">1 / 60</span>
+      <span id="qCounter" class="text-turquoise-400/50 text-xs mono whitespace-nowrap">1 / 60</span>
     </div>
 
-    <!-- Question card -->
-    <div class="q-card p-6 mb-5 fade-up" id="questionCard">
-      <div class="text-xs text-slate-500 mono mb-3" id="qNum">Q1</div>
-      <p class="text-white text-base leading-relaxed font-medium" id="questionText">Loading…</p>
+    <div class="glass-card p-6 mb-5 fade-up" id="questionCard">
+      <div class="text-xs text-turquoise-400/40 mono mb-3" id="qNum">Q1</div>
+      <p class="text-white text-base sm:text-lg leading-relaxed font-medium" id="questionText">Loading...</p>
     </div>
 
-    <!-- Options -->
-    <div class="space-y-3" id="optionsContainer"></div>
+    <div class="space-y-3 mb-6" id="optionsContainer"></div>
 
-    <!-- Bottom nav -->
-    <div class="flex justify-between items-center mt-6">
-      <span class="text-xs text-slate-600" id="answeredCount">0 answered</span>
-      <button id="nextBtn" onclick="nextQuestion()" class="btn btn-ghost btn-sm text-slate-400 hidden">
-        Skip →
+    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+      <span class="text-xs text-turquoise-400/35" id="answeredCount">0 answered</span>
+      <button id="submitBtn" onclick="submitAnswer()" disabled class="submit-btn w-full sm:w-auto">
+        Submit Answer
       </button>
     </div>
   </div>
 </div>
 
-<!-- ===================== RESULTS ===================== -->
-<div id="resultsView" class="hidden min-h-screen px-4 py-12">
+<!-- RESULTS -->
+<div id="resultsView" class="hidden content-wrap min-h-screen px-4 py-12">
   <div class="max-w-2xl mx-auto fade-up">
     <div class="flex items-center gap-3 mb-10">
-      <div class="brand-gradient w-8 h-8 rounded-lg flex items-center justify-center">
-        <span class="text-white font-bold text-xs mono">R</span>
+      <div class="logo-icon brand-gradient w-9 h-9">
+        <span class="text-white font-bold text-xs mono">T</span>
       </div>
-      <span class="text-slate-400 text-sm font-medium tracking-widest uppercase">Assessment Complete</span>
+      <span class="text-turquoise-300/60 text-sm font-semibold tracking-widest uppercase">Test Complete</span>
     </div>
 
-    <!-- Score ring -->
     <div class="flex flex-col sm:flex-row items-center gap-8 mb-10">
       <div class="score-ring">
         <svg width="160" height="160" viewBox="0 0 160 160">
@@ -276,71 +358,67 @@
         </svg>
         <div class="score-label">
           <span class="text-white text-3xl font-bold mono" id="scorePct">0%</span>
-          <span class="text-slate-500 text-xs mt-1">accuracy</span>
+          <span class="text-turquoise-400/50 text-xs mt-1">accuracy</span>
         </div>
       </div>
       <div>
         <h2 class="text-2xl font-bold text-white mb-2" id="resultHeadline">Results</h2>
-        <p class="text-slate-400 text-sm leading-relaxed" id="resultSub"></p>
-        <div class="flex gap-4 mt-4">
+        <p class="text-turquoise-200/55 text-sm leading-relaxed" id="resultSub"></p>
+        <div class="flex gap-6 mt-5">
           <div>
             <div class="text-white font-bold text-xl mono" id="correctCount">0</div>
-            <div class="text-xs text-slate-500">Correct</div>
+            <div class="text-xs text-turquoise-400/45">Correct</div>
           </div>
           <div>
             <div class="text-white font-bold text-xl mono" id="wrongCount">0</div>
-            <div class="text-xs text-slate-500">Wrong / Skipped</div>
+            <div class="text-xs text-turquoise-400/45">Wrong / Skipped</div>
           </div>
           <div>
             <div class="text-white font-bold text-xl mono" id="timeoutCount">0</div>
-            <div class="text-xs text-slate-500">Timed Out</div>
+            <div class="text-xs text-turquoise-400/45">Timed Out</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Section breakdown -->
-    <div class="q-card p-5 mb-6">
-      <div class="text-xs uppercase tracking-widest text-slate-500 mb-5 font-semibold">Section Breakdown</div>
+    <div class="glass-card p-6 mb-6">
+      <div class="text-xs uppercase tracking-widest text-turquoise-400/50 mb-5 font-semibold">Section Breakdown</div>
       <div class="space-y-4" id="sectionBreakdown"></div>
     </div>
 
-    <!-- Wrong answers review -->
-    <div class="q-card p-5 mb-8">
-      <div class="text-xs uppercase tracking-widest text-slate-500 mb-5 font-semibold">Review — Incorrect / Timed Out</div>
+    <div class="glass-card p-6 mb-8">
+      <div class="text-xs uppercase tracking-widest text-turquoise-400/50 mb-5 font-semibold">Review: Incorrect / Timed Out</div>
       <div class="space-y-5 max-h-96 overflow-y-auto pr-1" id="reviewList"></div>
     </div>
 
-    <button onclick="location.reload()" class="btn brand-gradient border-0 text-white px-8 py-3 text-sm font-semibold rounded-xl hover:opacity-90">
-      Retake Assessment
+    <button onclick="location.reload()" class="start-btn">
+      Retake Sample Test
     </button>
   </div>
 </div>
 
 <script>
 const SECTIONS = [
-  { name: "Logical Reasoning", range: [0, 14], color: "bg-indigo-900/60 text-indigo-300", barColor: "#818cf8" },
-  { name: "Quantitative Aptitude", range: [15, 29], color: "bg-violet-900/60 text-violet-300", barColor: "#a78bfa" },
-  { name: "Verbal & Critical Reasoning", range: [30, 44], color: "bg-purple-900/60 text-purple-300", barColor: "#c084fc" },
-  { name: "Pattern & Sparse Inference", range: [45, 59], color: "bg-fuchsia-900/60 text-fuchsia-300", barColor: "#e879f9" },
+  { name: "Logical Reasoning", range: [0, 14], color: "sec-t1", barColor: "#2dd4bf" },
+  { name: "Quantitative Aptitude", range: [15, 29], color: "sec-t2", barColor: "#14b8a6" },
+  { name: "Verbal & Critical Reasoning", range: [30, 44], color: "sec-t3", barColor: "#5eead4" },
+  { name: "Pattern & Sparse Inference", range: [45, 59], color: "sec-t4", barColor: "#0d9488" },
 ];
 
 const QUESTIONS = [
-  // ─── SECTION 1: LOGICAL REASONING (Q1–15) ───
   {
     q: "If all Zorks are Blinks, some Blinks are Clonks, and no Clonks are Drunks, which conclusion MUST be true?",
     opts: ["All Zorks are Clonks", "Some Blinks are not Drunks", "No Zorks are Drunks", "Some Zorks are Clonks"],
     ans: 1,
   },
   {
-    q: "In a group of 5 suspects — A, B, C, D, E — exactly two are guilty. B is guilty only if A is innocent. D is guilty only if C is guilty. E is never guilty unless B is guilty. If A is guilty, which set of remaining suspects COULD form the second guilty party?",
+    q: "In a group of 5 suspects (A, B, C, D, E), exactly two are guilty. B is guilty only if A is innocent. D is guilty only if C is guilty. E is never guilty unless B is guilty. If A is guilty, which remaining suspect COULD be the second guilty party?",
     opts: ["B", "C", "D", "E"],
     ans: 1,
   },
   {
     q: "A statement is 'self-defeating' if assuming it true makes it false. Which of the following is self-defeating?",
-    opts: [""This sentence has five words."", ""No sentence in this test is true."", ""All rules have exceptions."", ""This statement cannot be proved.""],
-    opts: ['"This sentence has five words."', '"No sentence in this test is true."', '"All rules have exceptions."', '"This statement cannot be proved."'],
+    opts: ["This sentence has five words.", "No sentence in this test is true.", "All rules have exceptions.", "This statement cannot be proved."],
     ans: 1,
   },
   {
@@ -354,7 +432,7 @@ const QUESTIONS = [
     ans: 0,
   },
   {
-    q: "Six people A–F sit in a circle. A sits opposite D. B sits two seats clockwise from A. C sits immediately to the right of D. Where does F sit relative to B?",
+    q: "Six people A through F sit in a circle. A sits opposite D. B sits two seats clockwise from A. C sits immediately to the right of D. Where does F sit relative to B?",
     opts: ["Immediately to B's left", "Opposite B", "Two seats counter-clockwise from B", "Cannot be determined with given constraints"],
     ans: 3,
   },
@@ -395,7 +473,7 @@ const QUESTIONS = [
   },
   {
     q: "Which argument structure is VALID? (P = 'rain', Q = 'wet ground', R = 'slippery road')",
-    opts: ["P→Q, Q→R, ¬P, therefore ¬R", "P→Q, P→R, Q, therefore R", "P→Q, Q→R, P, therefore R", "¬P→¬Q, Q, therefore P"],
+    opts: ["P->Q, Q->R, not P, therefore not R", "P->Q, P->R, Q, therefore R", "P->Q, Q->R, P, therefore R", "not P->not Q, Q, therefore P"],
     ans: 2,
   },
   {
@@ -403,8 +481,6 @@ const QUESTIONS = [
     opts: ["14", "21", "22", "11"],
     ans: 0,
   },
-
-  // ─── SECTION 2: QUANTITATIVE APTITUDE (Q16–30) ───
   {
     q: "A cistern has two inlet pipes (A fills in 4h, B fills in 6h) and one outlet pipe (C empties in 3h). All three open simultaneously. How long to fill the cistern from empty?",
     opts: ["12 hours", "36 hours", "24 hours", "Never fills"],
@@ -421,7 +497,7 @@ const QUESTIONS = [
     ans: 0,
   },
   {
-    q: "If log₂(x) + log₄(x) + log₁₆(x) = 7, what is x?",
+    q: "If log base 2 of x plus log base 4 of x plus log base 16 of x equals 7, what is x?",
     opts: ["64", "128", "256", "512"],
     ans: 1,
   },
@@ -431,7 +507,7 @@ const QUESTIONS = [
     ans: 0,
   },
   {
-    q: "How many distinct 5-digit numbers can be formed using digits 1–9 (no repetition) such that the number is divisible by 5?",
+    q: "How many distinct 5-digit numbers can be formed using digits 1 to 9 (no repetition) such that the number is divisible by 5?",
     opts: ["3024", "6048", "1344", "2688"],
     ans: 0,
   },
@@ -446,8 +522,8 @@ const QUESTIONS = [
     ans: 2,
   },
   {
-    q: "₹1,00,000 is invested at 10% p.a. compounded semi-annually for 2 years. The total interest earned is approximately:",
-    opts: ["₹21,551", "₹20,000", "₹21,000", "₹22,100"],
+    q: "Rs 1,00,000 is invested at 10% p.a. compounded semi-annually for 2 years. The total interest earned is approximately:",
+    opts: ["Rs 21,551", "Rs 20,000", "Rs 21,000", "Rs 22,100"],
     ans: 0,
   },
   {
@@ -456,12 +532,12 @@ const QUESTIONS = [
     ans: 0,
   },
   {
-    q: "A point moves along a number line: starts at 0, moves +3, then −5, then +7, then −9, following the pattern +3, −5, +7, −9, +11, −13,… After 20 moves, what is its position?",
+    q: "A point moves along a number line: starts at 0, moves +3, then -5, then +7, then -9, following the pattern +3, -5, +7, -9, +11, -13,... After 20 moves, what is its position?",
     opts: ["-20", "-10", "0", "10"],
     ans: 0,
   },
   {
-    q: "If f(x) = x² − 3x + 2 and g(x) = 2x + 1, what is the value of f(g(2)) − g(f(2))?",
+    q: "If f(x) = x squared minus 3x plus 2 and g(x) = 2x + 1, what is the value of f(g(2)) minus g(f(2))?",
     opts: ["20", "18", "22", "16"],
     ans: 0,
   },
@@ -480,8 +556,6 @@ const QUESTIONS = [
     opts: ["120", "108", "96", "132"],
     ans: 0,
   },
-
-  // ─── SECTION 3: VERBAL & CRITICAL REASONING (Q31–45) ───
   {
     q: "The author argues that social media increases political polarization because people self-select into echo chambers. Which of the following, if true, MOST weakens this argument?",
     opts: [
@@ -500,10 +574,10 @@ const QUESTIONS = [
   {
     q: "Which of the following represents a 'false dilemma' fallacy?",
     opts: [
-      "'You're either with us or against us — there's no middle ground.'",
-      "'Millions of people believe this, so it must be true.'",
-      "'He can't be trusted; he was arrested once.'",
-      "'We should adopt this policy because experts recommend it.'",
+      "You're either with us or against us. There is no middle ground.",
+      "Millions of people believe this, so it must be true.",
+      "He can't be trusted; he was arrested once.",
+      "We should adopt this policy because experts recommend it.",
     ],
     ans: 0,
   },
@@ -520,10 +594,10 @@ const QUESTIONS = [
   {
     q: "A passage states: 'Only experienced surgeons should perform this operation.' A doctor interprets this as: 'If you perform this operation, you must be experienced.' Is this inference valid?",
     opts: [
-      "Yes — it follows directly from the statement.",
-      "No — it confuses sufficient and necessary conditions.",
-      "Yes — it is the contrapositive of the original.",
-      "No — the original statement refers to 'should', which is normative not logical.",
+      "Yes, it follows directly from the statement.",
+      "No, it confuses sufficient and necessary conditions.",
+      "Yes, it is the contrapositive of the original.",
+      "No, the original statement refers to 'should', which is normative not logical.",
     ],
     ans: 0,
   },
@@ -548,7 +622,7 @@ const QUESTIONS = [
     ans: 1,
   },
   {
-    q: "Choose the correct word: 'The committee will _____ its decision after reviewing the new data.' (accept / except / affect / effect / defer / defur)",
+    q: "Choose the correct word: 'The committee will _____ its decision after reviewing the new data.'",
     opts: ["Accept", "Except", "Affect", "Defer"],
     ans: 3,
   },
@@ -597,30 +671,28 @@ const QUESTIONS = [
     opts: ["Q-S-P-R", "Q-S-R-P", "S-Q-P-R", "P-Q-S-R"],
     ans: 0,
   },
-
-  // ─── SECTION 4: PATTERN & SPARSE INFERENCE (Q46–60) ───
   {
     q: "Number series: 2, 3, 5, 9, 17, 33, ___",
     opts: ["63", "65", "67", "61"],
     ans: 1,
   },
   {
-    q: "If ★ means 'double and subtract 3' and ♦ means 'halve and add 5', what is ♦(★(★(2)))?",
+    q: "If star means 'double and subtract 3' and diamond means 'halve and add 5', what is diamond(star(star(2)))?",
     opts: ["7.5", "9", "8.5", "10"],
     ans: 0,
   },
   {
-    q: "A company's revenue pattern (in ₹ lakhs) over 6 quarters: 10, 12, 9, 15, 11, 19, ___. What is the most likely next value?",
+    q: "A company's revenue pattern (in Rs lakhs) over 6 quarters: 10, 12, 9, 15, 11, 19, ___. What is the most likely next value?",
     opts: ["13", "22", "25", "17"],
     ans: 0,
   },
   {
-    q: "In a 4×4 matrix, each row and column contains digits 1–4 exactly once. Three cells are filled: Row1-Col1=3, Row2-Col3=1, Row3-Col2=4. What goes in Row4-Col4?",
+    q: "In a 4x4 matrix, each row and column contains digits 1 to 4 exactly once. Three cells are filled: Row1-Col1=3, Row2-Col3=1, Row3-Col2=4. What goes in Row4-Col4?",
     opts: ["1", "2", "3", "Cannot be uniquely determined"],
     ans: 3,
   },
   {
-    q: "Observe this output table from an unknown function f:\nf(1,2)=5, f(2,3)=10, f(3,4)=17, f(4,5)=26. What is f(6,7)?",
+    q: "Observe this output table from an unknown function f: f(1,2)=5, f(2,3)=10, f(3,4)=17, f(4,5)=26. What is f(6,7)?",
     opts: ["50", "48", "52", "46"],
     ans: 0,
   },
@@ -630,7 +702,7 @@ const QUESTIONS = [
     ans: 1,
   },
   {
-    q: "A letter grid has this pattern:\nRow 1: A C F J O\nRow 2: B E I N T\nRow 3: D H M S ?\nWhat letter fills the '?'",
+    q: "A letter grid has this pattern: Row 1: A C F J O, Row 2: B E I N T, Row 3: D H M S ?. What letter fills the '?'",
     opts: ["Y", "Z", "X", "W"],
     ans: 0,
   },
@@ -641,7 +713,7 @@ const QUESTIONS = [
   },
   {
     q: "You observe these startup hiring patterns: Startup P hired 3 ML engineers then 1 PM. Startup Q hired 5 ML engineers then 2 PMs. Startup R hired 2 ML engineers then 0 PMs. Startup S hired 7 ML engineers and is about to hire. By inductive inference, S will most likely hire approximately:",
-    opts: ["0 PMs", "1 PM", "2–3 PMs", "5 PMs"],
+    opts: ["0 PMs", "1 PM", "2 to 3 PMs", "5 PMs"],
     ans: 2,
   },
   {
@@ -660,34 +732,34 @@ const QUESTIONS = [
     ans: 0,
   },
   {
-    q: "An unknown operation ⊕ satisfies: 1⊕1=0, 1⊕0=1, 0⊕1=1, 0⊕0=0, and 2⊕3=1, 5⊕6=3. What is 7⊕5?",
+    q: "An unknown operation satisfies: 1 op 1=0, 1 op 0=1, 0 op 1=1, 0 op 0=0, and 2 op 3=1, 5 op 6=3. What is 7 op 5?",
     opts: ["2", "3", "12", "1"],
     ans: 0,
   },
   {
-    q: "Five cities P, Q, R, S, T are connected by flights. You know: P↔Q, Q↔R, R↔S, P↔T. A traveller must visit all 5 starting and ending at P without repeating an edge. Which route is possible?",
-    opts: ["P→Q→R→S→T→P", "P→T→P→Q→R→S", "P→Q→R→S→Q→T→P", "No Eulerian circuit exists with these edges"],
+    q: "Five cities P, Q, R, S, T are connected by flights. You know: P-Q, Q-R, R-S, P-T. A traveller must visit all 5 starting and ending at P without repeating an edge. Which route is possible?",
+    opts: ["P->Q->R->S->T->P", "P->T->P->Q->R->S", "P->Q->R->S->Q->T->P", "No Eulerian circuit exists with these edges"],
     ans: 3,
   },
   {
-    q: "You have 5 data points: (1,2), (2,4), (3,9), (4,16), (5,25). A colleague says the pattern is y = x². You notice the 3rd point doesn't fit. The most likely correct model is:",
-    opts: ["y = x²", "y = 2x", "y = x² with noise in point 3", "y = 2^x"],
+    q: "You have 5 data points: (1,2), (2,4), (3,9), (4,16), (5,25). A colleague says the pattern is y = x squared. You notice the 3rd point doesn't fit. The most likely correct model is:",
+    opts: ["y = x squared", "y = 2x", "y = x squared with noise in point 3", "y = 2 to the x"],
     ans: 2,
   },
   {
     q: "A company's NPS scores: Jan=40, Feb=38, Mar=44, Apr=37, May=45, Jun=36, Jul=46. What is the underlying pattern and the most defensible prediction for August?",
-    opts: ["Steady growth → ~50", "Alternating decline/rise with overall upward drift → ~35–38", "Random noise → unpredictable", "Seasonal cycle → ~44"],
+    opts: ["Steady growth to about 50", "Alternating decline/rise with overall upward drift to about 35-38", "Random noise, unpredictable", "Seasonal cycle to about 44"],
     ans: 1,
   },
 ];
 
-// ── State ──
 let currentQ = 0;
 let selected = null;
 let answered = 0;
 let timerValue = 30;
 let timerInterval = null;
 let results = [];
+let locked = false;
 
 function startTest() {
   document.getElementById("splash").classList.add("hidden");
@@ -707,40 +779,51 @@ function renderQuestion() {
   const secIdx = getSectionIndex(currentQ);
   const sec = SECTIONS[secIdx];
 
-  // Section badge
   const badge = document.getElementById("sectionBadge");
   badge.textContent = `Section ${secIdx + 1}: ${sec.name}`;
   badge.className = `section-badge ${sec.color}`;
 
-  // Question
   document.getElementById("qNum").textContent = `Q${currentQ + 1}`;
   document.getElementById("questionText").textContent = q.q;
 
-  // Progress
   const pct = (currentQ / 60) * 100;
   document.getElementById("progressFill").style.width = pct + "%";
   document.getElementById("qCounter").textContent = `${currentQ + 1} / 60`;
   document.getElementById("answeredCount").textContent = `${answered} answered`;
 
-  // Options
   const container = document.getElementById("optionsContainer");
   container.innerHTML = "";
   const labels = ["A", "B", "C", "D"];
   q.opts.forEach((opt, i) => {
     const btn = document.createElement("button");
     btn.className = "option-btn fade-up";
+    btn.dataset.idx = i;
     btn.innerHTML = `<span class="option-label">${labels[i]}</span><span>${opt}</span>`;
     btn.onclick = () => selectOption(i);
     container.appendChild(btn);
   });
 
-  // Card animation reset
   const card = document.getElementById("questionCard");
   card.classList.remove("timeout-flash");
+  card.classList.add("fade-up");
   void card.offsetWidth;
 
   selected = null;
+  locked = false;
+  document.getElementById("submitBtn").disabled = true;
+  document.getElementById("submitBtn").textContent = "Submit Answer";
   startTimer();
+}
+
+function selectOption(idx) {
+  if (locked) return;
+  selected = idx;
+  document.getElementById("submitBtn").disabled = false;
+
+  const btns = document.querySelectorAll(".option-btn");
+  btns.forEach((btn, i) => {
+    btn.classList.toggle("selected", i === idx);
+  });
 }
 
 function startTimer() {
@@ -765,63 +848,51 @@ function updateTimerDisplay() {
 
   const arc = document.getElementById("timerArc");
   arc.style.strokeDashoffset = 220 * (1 - pct / 100);
-
   arc.className = "fg";
   if (timerValue <= 10) arc.classList.add("danger");
   else if (timerValue <= 15) arc.classList.add("warn");
 }
 
-function handleTimeout() {
-  results.push({ q: currentQ, chosen: null, correct: false, timedOut: true });
-  const card = document.getElementById("questionCard");
-  card.classList.add("timeout-flash");
-
-  // Show correct answer
-  const btns = document.querySelectorAll(".option-btn");
-  btns.forEach((btn, i) => {
-    btn.style.pointerEvents = "none";
-    if (i === QUESTIONS[currentQ].ans) btn.classList.add("correct");
-  });
-
-  setTimeout(() => {
-    answered++;
-    currentQ++;
-    if (currentQ >= 60) showResults();
-    else renderQuestion();
-  }, 900);
-}
-
-function selectOption(idx) {
-  if (selected !== null) return;
+function lockOptions(showFeedback) {
+  locked = true;
   clearInterval(timerInterval);
-  selected = idx;
-
   const q = QUESTIONS[currentQ];
-  const correct = idx === q.ans;
-  results.push({ q: currentQ, chosen: idx, correct, timedOut: false });
-
   const btns = document.querySelectorAll(".option-btn");
   btns.forEach((btn, i) => {
-    btn.style.pointerEvents = "none";
-    if (i === q.ans) btn.classList.add("correct");
-    else if (i === idx && !correct) btn.classList.add("wrong");
+    btn.classList.add("locked");
+    if (showFeedback) {
+      if (i === q.ans) btn.classList.add("correct");
+      else if (i === selected && selected !== q.ans) btn.classList.add("wrong");
+    }
   });
-
-  setTimeout(() => {
-    answered++;
-    currentQ++;
-    if (currentQ >= 60) showResults();
-    else renderQuestion();
-  }, 800);
+  document.getElementById("submitBtn").disabled = true;
 }
 
-function nextQuestion() {
-  clearInterval(timerInterval);
-  results.push({ q: currentQ, chosen: null, correct: false, timedOut: false });
+function advanceQuestion() {
   answered++;
   currentQ++;
   if (currentQ >= 60) showResults();
   else renderQuestion();
+}
+
+function handleTimeout() {
+  lockOptions(true);
+  results.push({ q: currentQ, chosen: selected, correct: false, timedOut: true });
+  const card = document.getElementById("questionCard");
+  card.classList.add("timeout-flash");
+  setTimeout(advanceQuestion, 900);
+}
+
+function submitAnswer() {
+  if (locked || selected === null) return;
+  lockOptions(true);
+
+  const q = QUESTIONS[currentQ];
+  const correct = selected === q.ans;
+  results.push({ q: currentQ, chosen: selected, correct, timedOut: false });
+
+  document.getElementById("submitBtn").textContent = "Submitted";
+  setTimeout(advanceQuestion, 600);
 }
 
 function showResults() {
@@ -834,7 +905,6 @@ function showResults() {
   const wrong = total - correct;
   const pct = Math.round((correct / 60) * 100);
 
-  // Score ring
   const arc = document.getElementById("scoreArc");
   arc.style.strokeDashoffset = 440 * (1 - pct / 100);
 
@@ -843,18 +913,25 @@ function showResults() {
   document.getElementById("wrongCount").textContent = wrong;
   document.getElementById("timeoutCount").textContent = timedOut;
 
-  // Headline
   const headline = document.getElementById("resultHeadline");
   const sub = document.getElementById("resultSub");
-  if (pct >= 80) { headline.textContent = "Exceptional performance."; sub.textContent = "You demonstrated strong reasoning across all four domains. Top-of-funnel shortlisted."; }
-  else if (pct >= 65) { headline.textContent = "Strong candidate."; sub.textContent = "Solid reasoning with some gaps. Likely to proceed to the next round."; }
-  else if (pct >= 50) { headline.textContent = "Borderline."; sub.textContent = "Mixed performance. Review weak sections before re-attempting."; }
-  else { headline.textContent = "Below threshold."; sub.textContent = "Significant gaps in reasoning. Revisit core logic and quantitative concepts."; }
+  if (pct >= 80) {
+    headline.textContent = "Excellent work!";
+    sub.textContent = "Strong reasoning across all four sections. Great job on this sample test.";
+  } else if (pct >= 65) {
+    headline.textContent = "Good performance.";
+    sub.textContent = "Solid results with a few gaps. Review the sections below to improve.";
+  } else if (pct >= 50) {
+    headline.textContent = "Room to grow.";
+    sub.textContent = "Mixed performance. Focus on your weaker sections and try again.";
+  } else {
+    headline.textContent = "Keep practicing.";
+    sub.textContent = "Use the review section below to study the questions you missed.";
+  }
 
-  // Section breakdown
   const breakdown = document.getElementById("sectionBreakdown");
   breakdown.innerHTML = "";
-  SECTIONS.forEach((sec, si) => {
+  SECTIONS.forEach((sec) => {
     const [start, end] = sec.range;
     const secResults = results.filter(r => r.q >= start && r.q <= end);
     const secCorrect = secResults.filter(r => r.correct).length;
@@ -863,9 +940,9 @@ function showResults() {
 
     breakdown.innerHTML += `
       <div>
-        <div class="flex justify-between items-center mb-1">
-          <span class="text-sm text-slate-300">${sec.name}</span>
-          <span class="mono text-xs text-slate-400">${secCorrect}/${secTotal} · ${secPct}%</span>
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="text-sm text-turquoise-100/80">${sec.name}</span>
+          <span class="mono text-xs text-turquoise-400/50">${secCorrect}/${secTotal} (${secPct}%)</span>
         </div>
         <div class="progress-track">
           <div style="width:${secPct}%; height:100%; border-radius:999px; background:${sec.barColor}; transition: width 1s ease;"></div>
@@ -873,29 +950,27 @@ function showResults() {
       </div>`;
   });
 
-  // Review wrong answers
   const reviewList = document.getElementById("reviewList");
   reviewList.innerHTML = "";
   const wrongs = results.filter(r => !r.correct);
   if (wrongs.length === 0) {
-    reviewList.innerHTML = '<p class="text-slate-500 text-sm">Perfect score — nothing to review!</p>';
+    reviewList.innerHTML = '<p class="text-turquoise-400/50 text-sm">Perfect score! Nothing to review.</p>';
   } else {
     wrongs.forEach(r => {
       const q = QUESTIONS[r.q];
       const labels = ["A", "B", "C", "D"];
-      const chosenText = r.timedOut ? "⏱ Timed out" : (r.chosen !== null ? `${labels[r.chosen]}: ${q.opts[r.chosen]}` : "Skipped");
+      const chosenText = r.timedOut
+        ? "Timed out"
+        : (r.chosen !== null ? `${labels[r.chosen]}: ${q.opts[r.chosen]}` : "Skipped");
       reviewList.innerHTML += `
-        <div class="border-b border-slate-800 pb-4 last:border-0">
-          <div class="text-xs text-slate-500 mono mb-1">Q${r.q + 1}</div>
-          <p class="text-slate-300 text-sm mb-2">${q.q}</p>
-          <div class="text-xs text-red-400 mb-1">✗ ${chosenText}</div>
-          <div class="text-xs text-green-400">✓ ${labels[q.ans]}: ${q.opts[q.ans]}</div>
+        <div class="border-b border-turquoise-900/40 pb-4 last:border-0">
+          <div class="text-xs text-turquoise-400/40 mono mb-1">Q${r.q + 1}</div>
+          <p class="text-turquoise-100/75 text-sm mb-2">${q.q}</p>
+          <div class="text-xs text-red-400 mb-1">Your answer: ${chosenText}</div>
+          <div class="text-xs text-emerald-400">Correct: ${labels[q.ans]}: ${q.opts[q.ans]}</div>
         </div>`;
     });
   }
-
-  // Animate section bars after a short delay
-  setTimeout(() => {}, 100);
 }
 </script>
 </body>
