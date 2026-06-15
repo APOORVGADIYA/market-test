@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ratch — Founding Analyst Assessment</title>
+<link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root { --timer-pct: 100%; }
+  * { font-family: 'Inter', sans-serif; }
+  code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+  body { background: #0d1117; min-height: 100vh; }
+
+  .brand-gradient { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%); }
+  .brand-text { background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  /* Timer ring */
+  .timer-ring { position: relative; width: 80px; height: 80px; }
+  .timer-ring svg { transform: rotate(-90deg); }
+  .timer-ring circle.bg { stroke: #1e2533; }
+  .timer-ring circle.fg {
+    stroke: #818cf8;
+    stroke-dasharray: 220;
+    stroke-dashoffset: calc(220 * (1 - var(--timer-pct) / 100));
+    transition: stroke-dashoffset 0.9s linear, stroke 0.5s;
+  }
+  .timer-ring circle.fg.warn { stroke: #f59e0b; }
+  .timer-ring circle.fg.danger { stroke: #ef4444; }
+  .timer-label {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; font-family: 'JetBrains Mono', monospace;
+    font-size: 1.25rem; font-weight: 600; color: #e2e8f0;
+  }
+
+  /* Question card */
+  .q-card {
+    background: #161b27;
+    border: 1px solid #1e2a3e;
+    border-radius: 16px;
+    transition: box-shadow 0.2s;
+  }
+
+  /* Option buttons */
+  .option-btn {
+    background: #1a2235;
+    border: 1.5px solid #1e2a3e;
+    border-radius: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: left;
+    width: 100%;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .option-btn:hover:not(.selected):not(.correct):not(.wrong) {
+    border-color: #6366f1;
+    background: #1e2845;
+    color: #f1f5f9;
+  }
+  .option-btn.selected {
+    border-color: #6366f1;
+    background: #1e2845;
+    color: #f1f5f9;
+  }
+  .option-btn.correct {
+    border-color: #22c55e;
+    background: #0f2818;
+    color: #86efac;
+  }
+  .option-btn.wrong {
+    border-color: #ef4444;
+    background: #2a0f0f;
+    color: #fca5a5;
+  }
+  .option-label {
+    width: 26px; height: 26px; min-width: 26px;
+    border-radius: 6px;
+    background: #0d1117;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; font-weight: 600;
+    color: #6366f1;
+    border: 1px solid #2a3550;
+    margin-top: 1px;
+  }
+
+  /* Section badge */
+  .section-badge {
+    font-size: 0.7rem; letter-spacing: 0.12em;
+    text-transform: uppercase; font-weight: 600;
+    padding: 3px 10px; border-radius: 999px;
+  }
+
+  /* Progress bar */
+  .progress-track {
+    background: #1e2533; border-radius: 999px; height: 4px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    transition: width 0.3s ease;
+  }
+
+  /* Results */
+  .score-ring { width: 160px; height: 160px; position: relative; }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring circle.bg { stroke: #1e2533; }
+  .score-ring circle.fg { stroke: #818cf8; stroke-dasharray: 440; transition: stroke-dashoffset 1.2s ease; }
+  .score-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+  /* Splash */
+  #splash { background: #0d1117; }
+  .feature-chip {
+    background: #161b27; border: 1px solid #1e2a3e;
+    border-radius: 8px; padding: 10px 16px;
+    font-size: 0.85rem; color: #94a3b8;
+  }
+
+  /* Timeout flash */
+  @keyframes flashRed { 0%,100% { background: #161b27; } 50% { background: #2a0f0f; } }
+  .timeout-flash { animation: flashRed 0.4s ease; }
+
+  /* Fade in */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.3s ease forwards; }
+</style>
+</head>
+<body>
+
+<!-- ===================== SPLASH ===================== -->
+<div id="splash" class="min-h-screen flex flex-col items-center justify-center px-4 py-12">
+  <div class="w-full max-w-2xl fade-up">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 mb-10">
+      <div class="brand-gradient w-9 h-9 rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold text-sm mono">R</span>
+      </div>
+      <span class="text-slate-400 text-sm font-medium tracking-widest uppercase">Ratch</span>
+    </div>
+
+    <h1 class="text-4xl font-bold text-white mb-3 leading-tight">
+      Founding Analyst<br/><span class="brand-text">Assessment</span>
+    </h1>
+    <p class="text-slate-400 mb-8 text-base leading-relaxed max-w-lg">
+      60 questions across four reasoning domains. Machine-scored to filter on raw cognitive horsepower. No second chances on the timer.
+    </p>
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      <div class="feature-chip text-center">
+        <div class="text-white font-bold text-xl mono">60</div>
+        <div class="text-xs mt-0.5">Questions</div>
+      </div>
+      <div class="feature-chip text-center">
+        <div class="text-white font-bold text-xl mono">30s</div>
+        <div class="text-xs mt-0.5">Per Question</div>
+      </div>
+      <div class="feature-chip text-center">
+        <div class="text-white font-bold text-xl mono">4</div>
+        <div class="text-xs mt-0.5">Sections</div>
+      </div>
+      <div class="feature-chip text-center">
+        <div class="text-white font-bold text-xl mono">~30m</div>
+        <div class="text-xs mt-0.5">Total Time</div>
+      </div>
+    </div>
+
+    <!-- Sections list -->
+    <div class="q-card p-5 mb-8">
+      <div class="text-xs uppercase tracking-widest text-slate-500 mb-4 font-semibold">Four Sections</div>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <span class="section-badge bg-indigo-900/60 text-indigo-300">Section 1</span>
+          <span class="text-slate-300 text-sm">Logical Reasoning · Q1–15</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="section-badge bg-violet-900/60 text-violet-300">Section 2</span>
+          <span class="text-slate-300 text-sm">Quantitative Aptitude · Q16–30</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="section-badge bg-purple-900/60 text-purple-300">Section 3</span>
+          <span class="text-slate-300 text-sm">Verbal & Critical Reasoning · Q31–45</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="section-badge bg-fuchsia-900/60 text-fuchsia-300">Section 4</span>
+          <span class="text-slate-300 text-sm">Pattern & Sparse Inference · Q46–60</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rules -->
+    <div class="text-sm text-slate-500 mb-8 space-y-1">
+      <p>→ Each question auto-advances when the 30s timer expires (marked wrong).</p>
+      <p>→ Selecting an option locks it — no changes.</p>
+      <p>→ Results + section breakdown shown at the end.</p>
+    </div>
+
+    <button onclick="startTest()" class="btn brand-gradient border-0 text-white w-full sm:w-auto px-10 py-3 text-base font-semibold rounded-xl hover:opacity-90 transition-opacity">
+      Begin Assessment →
+    </button>
+  </div>
+</div>
+
+<!-- ===================== TEST ===================== -->
+<div id="testView" class="hidden min-h-screen px-4 py-8">
+  <div class="max-w-2xl mx-auto">
+
+    <!-- Top bar -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="brand-gradient w-8 h-8 rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-xs mono">R</span>
+        </div>
+        <span id="sectionBadge" class="section-badge bg-indigo-900/60 text-indigo-300">Section 1</span>
+      </div>
+      <div class="timer-ring" id="timerRing">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle class="bg" cx="40" cy="40" r="35" fill="none" stroke-width="6"/>
+          <circle class="fg" id="timerArc" cx="40" cy="40" r="35" fill="none" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="timer-label" id="timerLabel">30</div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="progress-track flex-1">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <span id="qCounter" class="text-slate-500 text-xs mono">1 / 60</span>
+    </div>
+
+    <!-- Question card -->
+    <div class="q-card p-6 mb-5 fade-up" id="questionCard">
+      <div class="text-xs text-slate-500 mono mb-3" id="qNum">Q1</div>
+      <p class="text-white text-base leading-relaxed font-medium" id="questionText">Loading…</p>
+    </div>
+
+    <!-- Options -->
+    <div class="space-y-3" id="optionsContainer"></div>
+
+    <!-- Bottom nav -->
+    <div class="flex justify-between items-center mt-6">
+      <span class="text-xs text-slate-600" id="answeredCount">0 answered</span>
+      <button id="nextBtn" onclick="nextQuestion()" class="btn btn-ghost btn-sm text-slate-400 hidden">
+        Skip →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== RESULTS ===================== -->
+<div id="resultsView" class="hidden min-h-screen px-4 py-12">
+  <div class="max-w-2xl mx-auto fade-up">
+    <div class="flex items-center gap-3 mb-10">
+      <div class="brand-gradient w-8 h-8 rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold text-xs mono">R</span>
+      </div>
+      <span class="text-slate-400 text-sm font-medium tracking-widest uppercase">Assessment Complete</span>
+    </div>
+
+    <!-- Score ring -->
+    <div class="flex flex-col sm:flex-row items-center gap-8 mb-10">
+      <div class="score-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle class="bg" cx="80" cy="80" r="70" fill="none" stroke-width="10"/>
+          <circle class="fg" id="scoreArc" cx="80" cy="80" r="70" fill="none" stroke-width="10" stroke-linecap="round"/>
+        </svg>
+        <div class="score-label">
+          <span class="text-white text-3xl font-bold mono" id="scorePct">0%</span>
+          <span class="text-slate-500 text-xs mt-1">accuracy</span>
+        </div>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-white mb-2" id="resultHeadline">Results</h2>
+        <p class="text-slate-400 text-sm leading-relaxed" id="resultSub"></p>
+        <div class="flex gap-4 mt-4">
+          <div>
+            <div class="text-white font-bold text-xl mono" id="correctCount">0</div>
+            <div class="text-xs text-slate-500">Correct</div>
+          </div>
+          <div>
+            <div class="text-white font-bold text-xl mono" id="wrongCount">0</div>
+            <div class="text-xs text-slate-500">Wrong / Skipped</div>
+          </div>
+          <div>
+            <div class="text-white font-bold text-xl mono" id="timeoutCount">0</div>
+            <div class="text-xs text-slate-500">Timed Out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section breakdown -->
+    <div class="q-card p-5 mb-6">
+      <div class="text-xs uppercase tracking-widest text-slate-500 mb-5 font-semibold">Section Breakdown</div>
+      <div class="space-y-4" id="sectionBreakdown"></div>
+    </div>
+
+    <!-- Wrong answers review -->
+    <div class="q-card p-5 mb-8">
+      <div class="text-xs uppercase tracking-widest text-slate-500 mb-5 font-semibold">Review — Incorrect / Timed Out</div>
+      <div class="space-y-5 max-h-96 overflow-y-auto pr-1" id="reviewList"></div>
+    </div>
+
+    <button onclick="location.reload()" class="btn brand-gradient border-0 text-white px-8 py-3 text-sm font-semibold rounded-xl hover:opacity-90">
+      Retake Assessment
+    </button>
+  </div>
+</div>
+
+<script>
+const SECTIONS = [
+  { name: "Logical Reasoning", range: [0, 14], color: "bg-indigo-900/60 text-indigo-300", barColor: "#818cf8" },
+  { name: "Quantitative Aptitude", range: [15, 29], color: "bg-violet-900/60 text-violet-300", barColor: "#a78bfa" },
+  { name: "Verbal & Critical Reasoning", range: [30, 44], color: "bg-purple-900/60 text-purple-300", barColor: "#c084fc" },
+  { name: "Pattern & Sparse Inference", range: [45, 59], color: "bg-fuchsia-900/60 text-fuchsia-300", barColor: "#e879f9" },
+];
+
+const QUESTIONS = [
+  // ─── SECTION 1: LOGICAL REASONING (Q1–15) ───
+  {
+    q: "If all Zorks are Blinks, some Blinks are Clonks, and no Clonks are Drunks, which conclusion MUST be true?",
+    opts: ["All Zorks are Clonks", "Some Blinks are not Drunks", "No Zorks are Drunks", "Some Zorks are Clonks"],
+    ans: 1,
+  },
+  {
+    q: "In a group of 5 suspects — A, B, C, D, E — exactly two are guilty. B is guilty only if A is innocent. D is guilty only if C is guilty. E is never guilty unless B is guilty. If A is guilty, which set of remaining suspects COULD form the second guilty party?",
+    opts: ["B", "C", "D", "E"],
+    ans: 1,
+  },
+  {
+    q: "A statement is 'self-defeating' if assuming it true makes it false. Which of the following is self-defeating?",
+    opts: [""This sentence has five words."", ""No sentence in this test is true."", ""All rules have exceptions."", ""This statement cannot be proved.""],
+    ans: 1,
+  },
+  {
+    q: "Four boxes are labeled R, S, T, U. Each contains exactly one of: apple, banana, cherry, date. R is not apple. S is not banana or date. T is cherry. What is in U?",
+    opts: ["Apple", "Banana", "Date", "Cannot be determined"],
+    ans: 2,
+  },
+  {
+    q: "Every team that won last year's tournament had a foreign coach. Team Helios won last year's tournament but has never had a foreign coach. What is the STRONGEST valid conclusion?",
+    opts: ["Team Helios did not win last year's tournament", "The premise about foreign coaches is false", "Either Team Helios had a foreign coach or it didn't win", "Foreign coaches cause tournament wins"],
+    ans: 0,
+  },
+  {
+    q: "Six people A–F sit in a circle. A sits opposite D. B sits two seats clockwise from A. C sits immediately to the right of D. Where does F sit relative to B?",
+    opts: ["Immediately to B's left", "Opposite B", "Two seats counter-clockwise from B", "Cannot be determined with given constraints"],
+    ans: 3,
+  },
+  {
+    q: "If 'P implies Q' is true and 'Q implies R' is true, but 'R is false', which combination is necessarily false?",
+    opts: ["P is true and Q is true", "P is false and Q is true", "P is true and R is false", "Q is true and R is false"],
+    ans: 3,
+  },
+  {
+    q: "A farmer says: 'I will harvest either wheat or corn, but not both.' He also says: 'If I harvest corn, I will also harvest barley.' He ends up NOT harvesting barley. What did he harvest?",
+    opts: ["Wheat only", "Corn only", "Both wheat and barley", "Neither wheat nor corn"],
+    ans: 0,
+  },
+  {
+    q: "A code replaces each letter with the one 3 positions ahead in the alphabet (Z wraps to C). The coded message is 'UDEDQW'. What is the original word?",
+    opts: ["RABBIT", "RASCAL", "RASANT", "RABBET"],
+    ans: 0,
+  },
+  {
+    q: "In a tournament, each of 8 players plays every other player exactly once. A player gets 2 points for a win, 1 for a draw, 0 for a loss. After all games, the total points distributed equal:",
+    opts: ["56", "112", "28", "64"],
+    ans: 0,
+  },
+  {
+    q: "A says 'B is lying.' B says 'C is lying.' C says 'A and B are both lying.' If exactly one of them is telling the truth, who is it?",
+    opts: ["A", "B", "C", "It is impossible to determine"],
+    ans: 1,
+  },
+  {
+    q: "All published studies show Drug X reduces symptoms. A critic argues: 'Studies that found no effect were never published.' This critique, if true, most directly undermines:",
+    opts: ["The dosage used in all studies", "The causal mechanism proposed for Drug X", "The representativeness of the evidence base", "The qualifications of the researchers"],
+    ans: 2,
+  },
+  {
+    q: "A logic gate outputs 1 only if both inputs are 0 (NOR). Three such gates are chained: Gate 1 takes inputs A and B; Gate 2 takes inputs C and (output of Gate 1); Gate 3 takes inputs (output of Gate 2) and D. If A=0, B=0, C=1, D=0, what does Gate 3 output?",
+    opts: ["0", "1", "Undefined", "Depends on gate delay"],
+    ans: 1,
+  },
+  {
+    q: "Which argument structure is VALID? (P = 'rain', Q = 'wet ground', R = 'slippery road')",
+    opts: ["P→Q, Q→R, ¬P, therefore ¬R", "P→Q, P→R, Q, therefore R", "P→Q, Q→R, P, therefore R", "¬P→¬Q, Q, therefore P"],
+    ans: 2,
+  },
+  {
+    q: "Five statements about integer N: (i) N > 10, (ii) N is even, (iii) N is divisible by 7, (iv) N < 25, (v) N is prime. Exactly three are true. Which value of N satisfies this?",
+    opts: ["14", "21", "22", "11"],
+    ans: 0,
+  },
+
+  // ─── SECTION 2: QUANTITATIVE APTITUDE (Q16–30) ───
+  {
+    q: "A cistern has two inlet pipes (A fills in 4h, B fills in 6h) and one outlet pipe (C empties in 3h). All three open simultaneously. How long to fill the cistern from empty?",
+    opts: ["12 hours", "36 hours", "24 hours", "Never fills"],
+    ans: 3,
+  },
+  {
+    q: "A train travels from X to Y at 80 km/h and returns at 120 km/h. What is the average speed for the entire round trip?",
+    opts: ["100 km/h", "96 km/h", "104 km/h", "98 km/h"],
+    ans: 1,
+  },
+  {
+    q: "A jar has 40% red marbles and 60% blue. You draw 2 without replacement. What is the probability both are red if the jar has exactly 10 marbles?",
+    opts: ["2/15", "4/25", "1/6", "3/20"],
+    ans: 0,
+  },
+  {
+    q: "If log₂(x) + log₄(x) + log₁₆(x) = 7, what is x?",
+    opts: ["64", "128", "256", "512"],
+    ans: 1,
+  },
+  {
+    q: "A shopkeeper marks up cost by 40%, then offers a 20% discount. A customer pays a further 5% cashback. The effective profit/loss on cost price is:",
+    opts: ["6.4% profit", "5.6% profit", "4.8% profit", "3.2% loss"],
+    ans: 0,
+  },
+  {
+    q: "How many distinct 5-digit numbers can be formed using digits 1–9 (no repetition) such that the number is divisible by 5?",
+    opts: ["3024", "6048", "1344", "2688"],
+    ans: 0,
+  },
+  {
+    q: "Two workers A and B together complete a job in 12 days. A alone would take 18 days. After 8 days of working together, A leaves. How many more days does B need to finish?",
+    opts: ["14", "12", "16", "10"],
+    ans: 0,
+  },
+  {
+    q: "The sum of the squares of three consecutive odd integers is 2915. What is the largest integer?",
+    opts: ["31", "33", "35", "37"],
+    ans: 2,
+  },
+  {
+    q: "₹1,00,000 is invested at 10% p.a. compounded semi-annually for 2 years. The total interest earned is approximately:",
+    opts: ["₹21,551", "₹20,000", "₹21,000", "₹22,100"],
+    ans: 0,
+  },
+  {
+    q: "In how many ways can 8 people be arranged in a circle if two specific people (P and Q) must always sit adjacent to each other?",
+    opts: ["1440", "2880", "720", "5040"],
+    ans: 0,
+  },
+  {
+    q: "A point moves along a number line: starts at 0, moves +3, then −5, then +7, then −9, following the pattern +3, −5, +7, −9, +11, −13,… After 20 moves, what is its position?",
+    opts: ["-20", "-10", "0", "10"],
+    ans: 0,
+  },
+  {
+    q: "If f(x) = x² − 3x + 2 and g(x) = 2x + 1, what is the value of f(g(2)) − g(f(2))?",
+    opts: ["20", "18", "22", "16"],
+    ans: 0,
+  },
+  {
+    q: "A boat goes downstream in 2 hours and returns upstream in 3 hours. The river's current is 5 km/h. What is the distance between the two points?",
+    opts: ["60 km", "50 km", "40 km", "30 km"],
+    ans: 0,
+  },
+  {
+    q: "In a class of 120 students, 75 play cricket, 55 play football, and 20 play both. How many students play neither sport?",
+    opts: ["10", "15", "20", "5"],
+    ans: 0,
+  },
+  {
+    q: "The HCF of two numbers is 12 and their LCM is 1440. One number is 144. What is the other?",
+    opts: ["120", "108", "96", "132"],
+    ans: 0,
+  },
+
+  // ─── SECTION 3: VERBAL & CRITICAL REASONING (Q31–45) ───
+  {
+    q: "The author argues that social media increases political polarization because people self-select into echo chambers. Which of the following, if true, MOST weakens this argument?",
+    opts: [
+      "People use social media primarily for entertainment, not political content.",
+      "Countries with high social media penetration show lower polarization than countries with low penetration.",
+      "Echo chambers existed before social media in the form of partisan newspapers.",
+      "Most social media users follow both liberal and conservative accounts.",
+    ],
+    ans: 1,
+  },
+  {
+    q: "Select the word that best completes the analogy: Aphorism : Wisdom :: Elegy : ___",
+    opts: ["Joy", "Grief", "History", "Prophecy"],
+    ans: 1,
+  },
+  {
+    q: "Which of the following represents a 'false dilemma' fallacy?",
+    opts: [
+      "'You're either with us or against us — there's no middle ground.'",
+      "'Millions of people believe this, so it must be true.'",
+      "'He can't be trusted; he was arrested once.'",
+      "'We should adopt this policy because experts recommend it.'",
+    ],
+    ans: 0,
+  },
+  {
+    q: "Identify the sentence with CORRECT parallel structure:",
+    opts: [
+      "She likes hiking, to swim, and running marathons.",
+      "She likes hiking, swimming, and to run marathons.",
+      "She likes to hike, swimming, and run marathons.",
+      "She likes hiking, swimming, and running marathons.",
+    ],
+    ans: 3,
+  },
+  {
+    q: "A passage states: 'Only experienced surgeons should perform this operation.' A doctor interprets this as: 'If you perform this operation, you must be experienced.' Is this inference valid?",
+    opts: [
+      "Yes — it follows directly from the statement.",
+      "No — it confuses sufficient and necessary conditions.",
+      "Yes — it is the contrapositive of the original.",
+      "No — the original statement refers to 'should', which is normative not logical.",
+    ],
+    ans: 0,
+  },
+  {
+    q: "Which logical flaw does this argument contain? 'We've invested so much in this project. We must continue even if the returns are poor.'",
+    opts: ["Ad hominem", "Sunk cost fallacy", "Slippery slope", "Circular reasoning"],
+    ans: 1,
+  },
+  {
+    q: "The word 'PERSPICACIOUS' most nearly means:",
+    opts: ["Stubborn and persistent", "Having keen insight and understanding", "Excessively cautious", "Prone to exaggeration"],
+    ans: 1,
+  },
+  {
+    q: "A researcher claims: 'Cities with more hospitals have higher death rates, therefore hospitals cause deaths.' This reasoning is flawed because:",
+    opts: [
+      "Hospitals are not correlated with deaths at all.",
+      "The researcher is ignoring the base rate of illness in cities.",
+      "Death rates are not a valid measure of hospital performance.",
+      "The sample size is too small to draw conclusions.",
+    ],
+    ans: 1,
+  },
+  {
+    q: "Choose the correct word: 'The committee will _____ its decision after reviewing the new data.' (accept / except / affect / effect / defer / defur)",
+    opts: ["Accept", "Except", "Affect", "Defer"],
+    ans: 3,
+  },
+  {
+    q: "A CEO argues: 'Our satisfaction scores went up 10% after we launched the new app, so the app improved satisfaction.' What assumption is this argument most relying on?",
+    opts: [
+      "Satisfaction scores are the best metric available.",
+      "No other changes occurred simultaneously that could have raised scores.",
+      "The app was the primary project the team worked on.",
+      "A 10% increase is statistically significant.",
+    ],
+    ans: 1,
+  },
+  {
+    q: "Which option correctly identifies the main conclusion of this argument: 'Students who sleep more score higher on tests. Teen sleep has declined. Therefore, we should mandate earlier school start times.'",
+    opts: [
+      "Teen sleep has declined.",
+      "Students who sleep more score higher.",
+      "Earlier school start times should be mandated.",
+      "Test scores are the best measure of student performance.",
+    ],
+    ans: 2,
+  },
+  {
+    q: "What does 'TENDENTIOUS' most closely mean?",
+    opts: ["Inclined to argue excessively", "Promoting a particular cause or point of view", "Showing great care in details", "Emotionally volatile"],
+    ans: 1,
+  },
+  {
+    q: "A study reports: 'Eating breakfast correlates with higher productivity.' An employer concludes all staff must eat breakfast. What critical reasoning error has the employer made?",
+    opts: [
+      "Conflating correlation with causation and ignoring confounding variables",
+      "Using an unrepresentative sample",
+      "Making a hasty generalisation from one study",
+      "Reversing the cause and effect",
+    ],
+    ans: 0,
+  },
+  {
+    q: "In the sentence: 'The board, along with its advisors, are expected to vote tomorrow.' Which is the grammatical error?",
+    opts: ["'along with its advisors' should be 'and its advisors'", "'are' should be 'is'", "'expected to vote' should be 'expected of voting'", "There is no error"],
+    ans: 1,
+  },
+  {
+    q: "Arrange these four sentences into a coherent paragraph: (P) This led to reduced biodiversity. (Q) Monoculture farming prioritises a single crop. (R) Insects and birds dependent on varied vegetation declined. (S) Varied plant ecosystems were replaced with uniform fields.",
+    opts: ["Q-S-P-R", "Q-S-R-P", "S-Q-P-R", "P-Q-S-R"],
+    ans: 0,
+  },
+
+  // ─── SECTION 4: PATTERN & SPARSE INFERENCE (Q46–60) ───
+  {
+    q: "Number series: 2, 3, 5, 9, 17, 33, ___",
+    opts: ["63", "65", "67", "61"],
+    ans: 1,
+  },
+  {
+    q: "If ★ means 'double and subtract 3' and ♦ means 'halve and add 5', what is ♦(★(★(2)))?",
+    opts: ["7.5", "9", "8.5", "10"],
+    ans: 0,
+  },
+  {
+    q: "A company's revenue pattern (in ₹ lakhs) over 6 quarters: 10, 12, 9, 15, 11, 19, ___. What is the most likely next value?",
+    opts: ["13", "22", "25", "17"],
+    ans: 0,
+  },
+  {
+    q: "In a 4×4 matrix, each row and column contains digits 1–4 exactly once. Three cells are filled: Row1-Col1=3, Row2-Col3=1, Row3-Col2=4. What goes in Row4-Col4?",
+    opts: ["1", "2", "3", "Cannot be uniquely determined"],
+    ans: 3,
+  },
+  {
+    q: "Observe this output table from an unknown function f:\nf(1,2)=5, f(2,3)=10, f(3,4)=17, f(4,5)=26. What is f(6,7)?",
+    opts: ["50", "48", "52", "46"],
+    ans: 0,
+  },
+  {
+    q: "Three signals A, B, C toggle independently. A toggles every 2 seconds, B every 3 seconds, C every 5 seconds. All start HIGH at t=0. After 28 seconds, how many times have all three been simultaneously LOW?",
+    opts: ["0", "1", "2", "4"],
+    ans: 1,
+  },
+  {
+    q: "A letter grid has this pattern:\nRow 1: A C F J O\nRow 2: B E I N T\nRow 3: D H M S ?\nWhat letter fills the '?'",
+    opts: ["Y", "Z", "X", "W"],
+    ans: 0,
+  },
+  {
+    q: "Observe: 1=1, 11=2, 21=2, 1211=4, 111221=6, 312211=6. What is the NEXT term in this sequence (Look-and-Say)?",
+    opts: ["13112221", "1113213211", "31121311", "13211321"],
+    ans: 1,
+  },
+  {
+    q: "You observe these startup hiring patterns: Startup P hired 3 ML engineers then 1 PM. Startup Q hired 5 ML engineers then 2 PMs. Startup R hired 2 ML engineers then 0 PMs. Startup S hired 7 ML engineers and is about to hire. By inductive inference, S will most likely hire approximately:",
+    opts: ["0 PMs", "1 PM", "2–3 PMs", "5 PMs"],
+    ans: 2,
+  },
+  {
+    q: "A language has 3 words: 'kala' means red ball, 'kali' means red wall, 'moli' means blue wall. What most likely means 'blue ball'?",
+    opts: ["kola", "mola", "kamo", "limo"],
+    ans: 1,
+  },
+  {
+    q: "A tech company's active job postings by role change as follows: Month 1: 40 Eng, 10 Sales, 5 HR. Month 2: 60 Eng, 8 Sales, 5 HR. Month 3: 80 Eng, 6 Sales, 5 HR. Which inference is STRONGEST?",
+    opts: [
+      "The company is shifting toward an engineering-heavy product phase.",
+      "HR headcount is frozen by regulation.",
+      "Sales roles are being automated away.",
+      "The company has limited hiring budget.",
+    ],
+    ans: 0,
+  },
+  {
+    q: "An unknown operation ⊕ satisfies: 1⊕1=0, 1⊕0=1, 0⊕1=1, 0⊕0=0, and 2⊕3=1, 5⊕6=3. What is 7⊕5?",
+    opts: ["2", "3", "12", "1"],
+    ans: 0,
+  },
+  {
+    q: "Five cities P, Q, R, S, T are connected by flights. You know: P↔Q, Q↔R, R↔S, P↔T. A traveller must visit all 5 starting and ending at P without repeating an edge. Which route is possible?",
+    opts: ["P→Q→R→S→T→P", "P→T→P→Q→R→S", "P→Q→R→S→Q→T→P", "No Eulerian circuit exists with these edges"],
+    ans: 3,
+  },
+  {
+    q: "You have 5 data points: (1,2), (2,4), (3,9), (4,16), (5,25). A colleague says the pattern is y = x². You notice the 3rd point doesn't fit. The most likely correct model is:",
+    opts: ["y = x²", "y = 2x", "y = x² with noise in point 3", "y = 2^x"],
+    ans: 2,
+  },
+  {
+    q: "A company's NPS scores: Jan=40, Feb=38, Mar=44, Apr=37, May=45, Jun=36, Jul=46. What is the underlying pattern and the most defensible prediction for August?",
+    opts: ["Steady growth → ~50", "Alternating decline/rise with overall upward drift → ~35–38", "Random noise → unpredictable", "Seasonal cycle → ~44"],
+    ans: 1,
+  },
+];
+
+// ── State ──
+let currentQ = 0;
+let selected = null;
+let answered = 0;
+let timerValue = 30;
+let timerInterval = null;
+let results = [];
+
+function startTest() {
+  document.getElementById("splash").classList.add("hidden");
+  document.getElementById("testView").classList.remove("hidden");
+  renderQuestion();
+}
+
+function getSectionIndex(qIdx) {
+  for (let i = 0; i < SECTIONS.length; i++) {
+    if (qIdx >= SECTIONS[i].range[0] && qIdx <= SECTIONS[i].range[1]) return i;
+  }
+  return 0;
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const secIdx = getSectionIndex(currentQ);
+  const sec = SECTIONS[secIdx];
+
+  // Section badge
+  const badge = document.getElementById("sectionBadge");
+  badge.textContent = `Section ${secIdx + 1}: ${sec.name}`;
+  badge.className = `section-badge ${sec.color}`;
+
+  // Question
+  document.getElementById("qNum").textContent = `Q${currentQ + 1}`;
+  document.getElementById("questionText").textContent = q.q;
+
+  // Progress
+  const pct = (currentQ / 60) * 100;
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("qCounter").textContent = `${currentQ + 1} / 60`;
+  document.getElementById("answeredCount").textContent = `${answered} answered`;
+
+  // Options
+  const container = document.getElementById("optionsContainer");
+  container.innerHTML = "";
+  const labels = ["A", "B", "C", "D"];
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement("button");
+    btn.className = "option-btn fade-up";
+    btn.innerHTML = `<span class="option-label">${labels[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectOption(i);
+    container.appendChild(btn);
+  });
+
+  // Card animation reset
+  const card = document.getElementById("questionCard");
+  card.classList.remove("timeout-flash");
+  void card.offsetWidth;
+
+  selected = null;
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerValue = 30;
+  updateTimerDisplay();
+
+  timerInterval = setInterval(() => {
+    timerValue--;
+    updateTimerDisplay();
+    if (timerValue <= 0) {
+      clearInterval(timerInterval);
+      handleTimeout();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const pct = (timerValue / 30) * 100;
+  document.documentElement.style.setProperty("--timer-pct", pct + "%");
+  document.getElementById("timerLabel").textContent = timerValue;
+
+  const arc = document.getElementById("timerArc");
+  arc.style.strokeDashoffset = 220 * (1 - pct / 100);
+
+  arc.className = "fg";
+  if (timerValue <= 10) arc.classList.add("danger");
+  else if (timerValue <= 15) arc.classList.add("warn");
+}
+
+function handleTimeout() {
+  results.push({ q: currentQ, chosen: null, correct: false, timedOut: true });
+  const card = document.getElementById("questionCard");
+  card.classList.add("timeout-flash");
+
+  // Show correct answer
+  const btns = document.querySelectorAll(".option-btn");
+  btns.forEach((btn, i) => {
+    btn.style.pointerEvents = "none";
+    if (i === QUESTIONS[currentQ].ans) btn.classList.add("correct");
+  });
+
+  setTimeout(() => {
+    answered++;
+    currentQ++;
+    if (currentQ >= 60) showResults();
+    else renderQuestion();
+  }, 900);
+}
+
+function selectOption(idx) {
+  if (selected !== null) return;
+  clearInterval(timerInterval);
+  selected = idx;
+
+  const q = QUESTIONS[currentQ];
+  const correct = idx === q.ans;
+  results.push({ q: currentQ, chosen: idx, correct, timedOut: false });
+
+  const btns = document.querySelectorAll(".option-btn");
+  btns.forEach((btn, i) => {
+    btn.style.pointerEvents = "none";
+    if (i === q.ans) btn.classList.add("correct");
+    else if (i === idx && !correct) btn.classList.add("wrong");
+  });
+
+  setTimeout(() => {
+    answered++;
+    currentQ++;
+    if (currentQ >= 60) showResults();
+    else renderQuestion();
+  }, 800);
+}
+
+function nextQuestion() {
+  clearInterval(timerInterval);
+  results.push({ q: currentQ, chosen: null, correct: false, timedOut: false });
+  answered++;
+  currentQ++;
+  if (currentQ >= 60) showResults();
+  else renderQuestion();
+}
+
+function showResults() {
+  document.getElementById("testView").classList.add("hidden");
+  document.getElementById("resultsView").classList.remove("hidden");
+
+  const total = results.length;
+  const correct = results.filter(r => r.correct).length;
+  const timedOut = results.filter(r => r.timedOut).length;
+  const wrong = total - correct;
+  const pct = Math.round((correct / 60) * 100);
+
+  // Score ring
+  const arc = document.getElementById("scoreArc");
+  arc.style.strokeDashoffset = 440 * (1 - pct / 100);
+
+  document.getElementById("scorePct").textContent = pct + "%";
+  document.getElementById("correctCount").textContent = correct;
+  document.getElementById("wrongCount").textContent = wrong;
+  document.getElementById("timeoutCount").textContent = timedOut;
+
+  // Headline
+  const headline = document.getElementById("resultHeadline");
+  const sub = document.getElementById("resultSub");
+  if (pct >= 80) { headline.textContent = "Exceptional performance."; sub.textContent = "You demonstrated strong reasoning across all four domains. Top-of-funnel shortlisted."; }
+  else if (pct >= 65) { headline.textContent = "Strong candidate."; sub.textContent = "Solid reasoning with some gaps. Likely to proceed to the next round."; }
+  else if (pct >= 50) { headline.textContent = "Borderline."; sub.textContent = "Mixed performance. Review weak sections before re-attempting."; }
+  else { headline.textContent = "Below threshold."; sub.textContent = "Significant gaps in reasoning. Revisit core logic and quantitative concepts."; }
+
+  // Section breakdown
+  const breakdown = document.getElementById("sectionBreakdown");
+  breakdown.innerHTML = "";
+  SECTIONS.forEach((sec, si) => {
+    const [start, end] = sec.range;
+    const secResults = results.filter(r => r.q >= start && r.q <= end);
+    const secCorrect = secResults.filter(r => r.correct).length;
+    const secTotal = end - start + 1;
+    const secPct = Math.round((secCorrect / secTotal) * 100);
+
+    breakdown.innerHTML += `
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-sm text-slate-300">${sec.name}</span>
+          <span class="mono text-xs text-slate-400">${secCorrect}/${secTotal} · ${secPct}%</span>
+        </div>
+        <div class="progress-track">
+          <div style="width:${secPct}%; height:100%; border-radius:999px; background:${sec.barColor}; transition: width 1s ease;"></div>
+        </div>
+      </div>`;
+  });
+
+  // Review wrong answers
+  const reviewList = document.getElementById("reviewList");
+  reviewList.innerHTML = "";
+  const wrongs = results.filter(r => !r.correct);
+  if (wrongs.length === 0) {
+    reviewList.innerHTML = '<p class="text-slate-500 text-sm">Perfect score — nothing to review!</p>';
+  } else {
+    wrongs.forEach(r => {
+      const q = QUESTIONS[r.q];
+      const labels = ["A", "B", "C", "D"];
+      const chosenText = r.timedOut ? "⏱ Timed out" : (r.chosen !== null ? `${labels[r.chosen]}: ${q.opts[r.chosen]}` : "Skipped");
+      reviewList.innerHTML += `
+        <div class="border-b border-slate-800 pb-4 last:border-0">
+          <div class="text-xs text-slate-500 mono mb-1">Q${r.q + 1}</div>
+          <p class="text-slate-300 text-sm mb-2">${q.q}</p>
+          <div class="text-xs text-red-400 mb-1">✗ ${chosenText}</div>
+          <div class="text-xs text-green-400">✓ ${labels[q.ans]}: ${q.opts[q.ans]}</div>
+        </div>`;
+    });
+  }
+
+  // Animate section bars after a short delay
+  setTimeout(() => {}, 100);
+}
+</script>
+</body>
+</html>
